@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+DEFAULT_SPARK_HOME="/opt/spark-2.2.0-bin-hadoop2.7"
+
+source "conf/env.sh"
+
+master="--master local[*]"
+jar="target/scala-2.11/spark-app_2.11-0.1.jar"
+args="${@}"
+
+$SPARK_HOME/bin/spark-submit \
+    $master \
+    $jar \
+    $args
