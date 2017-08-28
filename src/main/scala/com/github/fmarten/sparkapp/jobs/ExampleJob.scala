@@ -2,21 +2,25 @@ package com.github.fmarten.sparkapp.jobs
 
 import com.github.fmarten.sparkapp.Job
 
-object ExampleJob extends Job {
+case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing")
 
-  override def printHelp(): Unit = {
-    println("Usage: example: <arg1> <arg2>")
+class ExampleJob(override val appName: String) extends Job[ExampleConfig] {
+
+  override val command: String = "example"
+  override val description: Option[String] = Some("Just prints its two arguments to std.")
+
+  override val config = ExampleConfig()
+
+  override val parser = new Parser {
+    opt[Int]("arg1").action( (x, c) =>
+      c.copy(arg1 = x) ).required().text("first argument")
+
+    opt[String]("arg2").action( (x, c) =>
+      c.copy(arg2 = x) ).text("second argument")
   }
 
-  override val description: Option[String] = Some("Just prints its two arguments to std.")
-  override val command: String = "example"
-
-  override def checkArgs(args: Array[String]): Boolean = args.length >= 2
-
-  override def run(args: Array[String]): Unit = {
-    val arg1 = args(0)
-    val arg2 = args(1)
-
-    println(s"example: arg1: $arg1, arg2: $arg2")
+  def run(config: ExampleConfig): Unit = {
+    println(s"$command: arg1: ${config.arg1}, " +
+      s"arg2: ${config.arg2}")
   }
 }
