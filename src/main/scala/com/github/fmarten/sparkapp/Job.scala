@@ -2,16 +2,19 @@ package com.github.fmarten.sparkapp
 
 import scopt.OptionDef
 
-abstract class Job[C] {
+abstract class Job {
+
+  type Config
+  val config: Config
 
   val appName: String
 
   val command: String = this.getClass.getSimpleName
-  val description: Option[String] = None
+  val description: String
 
-  val config: C
+
   val parser: Parser
-  def run(config: C): Unit
+  def run(config: Config): Unit
 
   def main(args: Array[String]): Unit = {
     run(parser.parse(args, config).get)
@@ -23,8 +26,11 @@ abstract class Job[C] {
 
   def checkArgs(args: Array[String]): Boolean = parser.parse(args, config).nonEmpty
 
-  abstract class Parser extends scopt.OptionParser[C](appName + " " + command) {
+  abstract class Parser extends scopt.OptionParser[Config](appName + " " + command) {
     override val showUsageOnError = false
+
+    note(s"$description\n")
+    note("Options:")
 
     help("help").text("prints this usage text")
   }

@@ -2,7 +2,7 @@ package com.github.fmarten.sparkapp
 
 
 trait BaseRun {
-  val jobs: List[Job[_]]
+  val jobs: List[Job]
   val appName: String
   val appDescription: String
 
@@ -16,7 +16,7 @@ trait BaseRun {
   def runCommand(command: String, args: Array[String]): Unit = {
     jobs.find( _.command == command ) match {
       case None => println(s"$appName: '$command' is not a command.")
-      case Some(job: Job[_]) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
+      case Some(job: Job) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
     }
   }
 
@@ -26,7 +26,7 @@ trait BaseRun {
     println("Commands:")
     val maxLength = jobs.map(_.command.length).max
     jobs.foreach { j =>
-      println(s" ${j.command.padTo(maxLength, ' ')}   ${j.description.getOrElse("")}")
+      println(s" ${j.command.padTo(maxLength, ' ')}   ${j.description}")
     }
     println(s"\nRun '$appName COMMAND --help' for more information on a command.")
   }

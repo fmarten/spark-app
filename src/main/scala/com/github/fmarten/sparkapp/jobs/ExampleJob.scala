@@ -2,14 +2,15 @@ package com.github.fmarten.sparkapp.jobs
 
 import com.github.fmarten.sparkapp.Job
 
-case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing")
+class ExampleJob(override val appName: String) extends Job {
 
-class ExampleJob(override val appName: String) extends Job[ExampleConfig] {
+  case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing")
+
+  type Config = ExampleConfig
+  override val config = ExampleConfig()
 
   override val command: String = "example"
-  override val description: Option[String] = Some("Just prints its two arguments to std.")
-
-  override val config = ExampleConfig()
+  override val description = "Just prints its two arguments to std."
 
   override val parser = new Parser {
     opt[Int]("arg1").action( (x, c) =>
@@ -19,7 +20,7 @@ class ExampleJob(override val appName: String) extends Job[ExampleConfig] {
       c.copy(arg2 = x) ).text("second argument")
   }
 
-  def run(config: ExampleConfig): Unit = {
+  def run(config: Config): Unit = {
     println(s"$command: arg1: ${config.arg1}, " +
       s"arg2: ${config.arg2}")
   }
