@@ -1,3 +1,5 @@
 conf/env.sh
 /target
 /project/target
+*.class
+*.log
