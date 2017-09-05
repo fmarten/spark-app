@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 
 class ExampleJob(override val appName: String) extends Job {
 
-  case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing")
+  case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing", arg3: Boolean = false)
 
   type Config = ExampleConfig
   override val config = ExampleConfig()
@@ -19,6 +19,9 @@ class ExampleJob(override val appName: String) extends Job {
 
     opt[String]("arg2").action( (x, c) =>
       c.copy(arg2 = x) ).text("second argument")
+
+    opt[Boolean]("arg3").action( (x, c) =>
+      c.copy(arg3 = true) ).text("third option as a flag")
   }
 
   def run(config: ExampleConfig): Unit = {
