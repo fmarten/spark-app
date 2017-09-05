@@ -1,6 +1,7 @@
 package com.github.fmarten.sparkapp.jobs
 
 import com.github.fmarten.sparkapp.Job
+import org.apache.spark.sql.SparkSession
 
 class ExampleJob(override val appName: String) extends Job {
 
@@ -20,7 +21,15 @@ class ExampleJob(override val appName: String) extends Job {
       c.copy(arg2 = x) ).text("second argument")
   }
 
-  def run(config: Config): Unit = {
+  def run(config: ExampleConfig): Unit = {
+    val session = SparkSession
+      .builder()
+      .getOrCreate()
+
+    runSpark(config, session)
+  }
+
+  def runSpark(config: ExampleConfig, session: SparkSession): Unit = {
     println(s"$command: arg1: ${config.arg1}, " +
       s"arg2: ${config.arg2}")
   }
