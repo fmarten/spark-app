@@ -1,8 +1,12 @@
 package com.github.fmarten.sparkapp
 
+import java.io.{File, FileInputStream}
+import java.util.Properties
+
 abstract class BaseJob {
   type ConfigType
   val config: ConfigType
+  val props: Properties = new Properties()
   val appName: String = "sparkapp"
 
   // Remove trailing $ from companion objects, .i.e. from MyObject$
@@ -28,6 +32,14 @@ abstract class BaseJob {
     note("Options:")
 
     help("help").text("prints this usage text")
+
+    opt[File]("properties-file").
+      text(s"Path to a file from which to load extra properties. Default: conf/defaults.conf").
+      action { (x, c) =>
+        props.load(new FileInputStream(x))
+        c
+      }.
+      withFallback(() => new File("conf/defaults.conf"))
   }
 
 }
