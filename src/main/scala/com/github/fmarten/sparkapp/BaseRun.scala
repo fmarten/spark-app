@@ -2,7 +2,7 @@ package com.github.fmarten.sparkapp
 
 
 trait BaseRun {
-  val jobs: List[Job]
+  val jobs: List[BaseJob]
   val appName: String
   val appDescription: String
 
@@ -16,9 +16,9 @@ trait BaseRun {
   def runCommand(command: String, args: Array[String]): Unit = {
     jobs.find( _.command == command ) match {
       case None => println(s"$appName: '$command' is not a command.")
-      case Some(job: Job) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
+      case Some(job: BaseJob) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
     }
-  }
+  } 
 
   def printHelp(): Unit = {
     println(s"\nUsage: $appName COMMAND\n")

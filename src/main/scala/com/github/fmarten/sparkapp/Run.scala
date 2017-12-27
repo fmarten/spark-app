@@ -7,7 +7,7 @@ object Run extends BaseRun {
   override val appName = "sparkapp"
 
   val jobs = List(
-    new ExampleJob(appName)
+    ExampleJob
   )
 
   override val appDescription =

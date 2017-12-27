@@ -1,19 +1,19 @@
 package com.github.fmarten.sparkapp.jobs
 
-import com.github.fmarten.sparkapp.Job
+import com.github.fmarten.sparkapp.SparkJob
 import org.apache.spark.sql.SparkSession
 
-class ExampleJob(override val appName: String) extends Job {
+object ExampleJob extends SparkJob {
 
   case class ExampleConfig(arg1: Int = -1, arg2: String = "nothing", arg3: Boolean = false)
 
-  type Config = ExampleConfig
+  type ConfigType = ExampleConfig
   override val config = ExampleConfig()
 
   override val command: String = "example"
   override val description = "Just prints its two arguments to std."
 
-  override val parser = new Parser {
+  override val parser: Parser = new Parser {
     opt[Int]("arg1").action( (x, c) =>
       c.copy(arg1 = x) ).required().text("first argument")
 
@@ -24,15 +24,7 @@ class ExampleJob(override val appName: String) extends Job {
       c.copy(arg3 = true) ).text("third option as a flag")
   }
 
-  def run(config: ExampleConfig): Unit = {
-    val session = SparkSession
-      .builder()
-      .getOrCreate()
-
-    runSpark(config, session)
-  }
-
-  def runSpark(config: ExampleConfig, session: SparkSession): Unit = {
+  override def run(spark: SparkSession, config: ExampleConfig): Unit = {
     println(s"$command: arg1: ${config.arg1}, " +
       s"arg2: ${config.arg2}")
   }
