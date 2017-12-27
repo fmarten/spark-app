@@ -1,5 +1,7 @@
 package com.github.fmarten.sparkapp
 
+import java.util
+
 import org.apache.spark.sql.SparkSession
 
 abstract class SparkJob extends BaseJob {
@@ -11,6 +13,13 @@ abstract class SparkJob extends BaseJob {
     val spark = {
       val builder = SparkSession
         .builder()
+
+      val e = props.propertyNames()
+
+      while (e.hasMoreElements) {
+        val key = e.nextElement.asInstanceOf[String]
+        builder.config(key, props.getProperty(key))
+      }
 
       for ((key, value) <- sparkConfig) {
         builder.config(key, value)
