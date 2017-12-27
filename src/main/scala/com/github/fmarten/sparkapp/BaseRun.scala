@@ -2,7 +2,7 @@ package com.github.fmarten.sparkapp
 
 
 trait BaseRun {
-  val jobs: List[Job]
+  val jobs: List[BaseJob]
   val appName: String
   val appDescription: String
 
@@ -14,20 +14,20 @@ trait BaseRun {
   }
 
   def runCommand(command: String, args: Array[String]): Unit = {
-    jobs.map(job => job.command -> job).toMap.get(command) match {
+    jobs.find( _.command == command ) match {
       case None => println(s"$appName: '$command' is not a command.")
-      case Some(job) => if (job.checkArgs(args)) job.run(args) else job.printHelp()
+      case Some(job: BaseJob) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
     }
-  }
+  } 
 
   def printHelp(): Unit = {
-    println(s"Usage: $appName COMMAND\n")
+    println(s"\nUsage: $appName COMMAND\n")
     println(s"$appDescription\n") // TODO
-
     println("Commands:")
     val maxLength = jobs.map(_.command.length).max
     jobs.foreach { j =>
-      println(s" ${j.command.padTo(maxLength, " ")}   ${j.description}")
+      println(s" ${j.command.padTo(maxLength, ' ')}   ${j.description}")
     }
+    println(s"\nRun '$appName COMMAND --help' for more information on a command.")
   }
 }
