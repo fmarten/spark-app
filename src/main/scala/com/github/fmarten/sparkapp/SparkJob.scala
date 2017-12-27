@@ -1,34 +1,45 @@
 package com.github.fmarten.sparkapp
 
-import java.util
-
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import collection.JavaConverters._
 
 abstract class SparkJob extends BaseJob {
 
-  private var sparkConfig = Map[String, String]()
+  protected val additionalSparkConf = new SparkConf()
+
+  private[this] def buildSpark = {
+    val builder = SparkSession.builder()
+
+      /*
+    val e = props.propertyNames()
+    while (e.hasMoreElements) {
+      val key = e.nextElement.asInstanceOf[String]
+      builder.config(key, props.getProperty(key))
+    }
+    */
+
+    builder.config(additionalSparkConf)
+
+    builder
+      .appName(this.getClass.getSimpleName)
+      .getOrCreate()
+  }
+
+
+  private[this] def printSparkConf(spark: SparkSession): Unit = {
+    val conf = spark.sparkContext.getConf
+    println("\nSpark Configuration:")
+    println("---------------")
+    conf.getAll.foreach{ case (k,v) => println(s"$k=$v")}
+    println("---------------\n")
+  }
 
   override def run(config: ConfigType): Unit = {
 
-    val spark = {
-      val builder = SparkSession
-        .builder()
+    val spark = buildSpark
 
-      val e = props.propertyNames()
-
-      while (e.hasMoreElements) {
-        val key = e.nextElement.asInstanceOf[String]
-        builder.config(key, props.getProperty(key))
-      }
-
-      for ((key, value) <- sparkConfig) {
-        builder.config(key, value)
-      }
-
-      builder
-        .appName(this.getClass.getSimpleName)
-        .getOrCreate()
-    }
+    if (debug) printSparkConf(spark)
 
     run(spark, config)
   }
@@ -45,10 +56,10 @@ abstract class SparkJob extends BaseJob {
         else failure(s"Invalid argument to --spark-conf: $x")
       ).
       action { (x, c) =>
-        val keyValue = x.split("=", 2) match {
+        val (key, value) = x.split("=", 2) match {
           case Array(k,v) => (k,v) // x.split(_, 2) ensures array is not longer than 2
         }
-      sparkConfig = sparkConfig + keyValue
+      additionalSparkConf.set(key, value)
       c
     }
   }

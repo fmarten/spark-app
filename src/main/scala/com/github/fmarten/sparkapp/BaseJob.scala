@@ -2,11 +2,13 @@ package com.github.fmarten.sparkapp
 
 import java.io.{File, FileInputStream}
 import java.util.Properties
+import collection.JavaConverters._
 
 abstract class BaseJob {
+  var debug: Boolean = false
+
   type ConfigType
   val config: ConfigType
-  val props: Properties = new Properties()
   val appName: String = "sparkapp"
 
   // Remove trailing $ from companion objects, .i.e. from MyObject$
@@ -15,15 +17,11 @@ abstract class BaseJob {
   protected val parser: _BaseParser
   def run(config: ConfigType): Unit
 
-  def main(args: Array[String]): Unit = {
-    run(parser.parse(args, config).get)
-  }
-
   def printHelp(): Unit = {
     parser.showHeader()
   }
 
-  def checkArgs(args: Array[String]): Boolean = parser.parse(args, config).nonEmpty
+  def parseArgs(args: Array[String]): Option[ConfigType] = parser.parse(args, config)
 
   abstract class _BaseParser extends scopt.OptionParser[ConfigType](appName + " " + command) {
     override val showUsageOnError = false
@@ -36,10 +34,21 @@ abstract class BaseJob {
     opt[File]("properties-file").
       text(s"Path to a file from which to load extra properties. Default: conf/defaults.conf").
       action { (x, c) =>
+        val props = new Properties()
         props.load(new FileInputStream(x))
+        for (key <- props.stringPropertyNames().asScala) { // FIXME
+          System.getProperties.setProperty(key, props.getProperty(key))
+        }
         c
       }.
       withFallback(() => new File("conf/defaults.conf"))
+
+    opt[Unit]("debug").
+      hidden().
+      action { (x, c) =>
+        debug = true
+        c
+      }
   }
 
 }

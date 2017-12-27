@@ -16,7 +16,10 @@ trait BaseRun {
   def runCommand(command: String, args: Array[String]): Unit = {
     jobs.find( _.command == command ) match {
       case None => println(s"$appName: '$command' is not a command.")
-      case Some(job: BaseJob) => if (job.checkArgs(args)) job.main(args) else job.printHelp()
+      case Some(job: BaseJob) =>
+        val configOpt = job.parseArgs(args)
+        if (configOpt.nonEmpty) job.run(configOpt.get)
+        else job.printHelp()
     }
   } 
 
